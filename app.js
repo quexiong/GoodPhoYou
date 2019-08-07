@@ -1,23 +1,51 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const connect_DB = require("./config/db");
+const mongoose = require('mongoose');
+
+connect_DB();
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 
-//for testing
-	const restaurants = [
-		{name: "Pho Dalat", image: "https://advancelocal-adapter-image-uploads.s3.amazonaws.com/image.oregonlive.com/home/olive-media/width2048/img/ent_impact_dining/photo/21927497-standard.jpg"},
-		{name: "Pho Kim", image: "https://advancelocal-adapter-image-uploads.s3.amazonaws.com/image.oregonlive.com/home/olive-media/width2048/img/ent_impact_dining/photo/21927497-standard.jpg"},
-		{name: "Pho Vietnam", image: "https://advancelocal-adapter-image-uploads.s3.amazonaws.com/image.oregonlive.com/home/olive-media/width2048/img/ent_impact_dining/photo/21927497-standard.jpg"},
-	];
+//testing schema
+const restaurantSchema = new mongoose.Schema({
+	name: String,
+	image: String
+});
+
+const Restaurant = mongoose.model('Restaurant', restaurantSchema);
+
+// Restaurant.create(
+// 	{
+// 		name: "Pho Dalat 2",
+// 		image: "https://advancelocal-adapter-image-uploads.s3.amazonaws.com/image.oregonlive.com/home/olive-media/width2048/img/ent_impact_dining/photo/21927497-standard.jpg"
+// 	}, function(err, restaurant){
+// 		if(err){
+// 			console.log(err);
+// 		} else{
+// 			console.log('new restaurant:');
+// 			console.log(restaurant);
+// 		}
+// 	});
+
+// 
 
 app.get('/', function(req, res) {
 	res.render('landing');
 });
 
 app.get('/restaurants', function(req, res) {
-	res.render('restaurants', {restaurants: restaurants});
+	// get all restaurants from DB
+	Restaurant.find({}, function(err, allRestaurants){
+		if(err){
+			console.log(err)
+		} else{
+			res.render("restaurants", {restaurants:allRestaurants});
+		}
+	});
+	// res.render('restaurants', {restaurants: restaurants});
 });
 
 app.post('/restaurants', function(req, res) {
@@ -25,9 +53,14 @@ app.post('/restaurants', function(req, res) {
 	const name = req.body.name;
 	const image = req.body.image;
 	const newRestaurant = {name: name, image: image};
-	restaurants.push(newRestaurant);
 
-	res.redirect('/restaurants');
+	Restaurant.create(newRestaurant, function(err, newCreatedRestaurant){
+		if(err){
+			console.log(err);
+		} else{
+			res.redirect('/restaurants');
+		}
+	});
 });
 
 app.get('/restaurants/new', function(req, res) {
