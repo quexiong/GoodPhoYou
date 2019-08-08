@@ -4,18 +4,13 @@ const bodyParser = require('body-parser');
 const connect_DB = require("./config/db");
 const mongoose = require('mongoose');
 
+const Restaurant = require('./models/restaurant.js')
+
 connect_DB();
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 
-//testing schema
-const restaurantSchema = new mongoose.Schema({
-	name: String,
-	image: String
-});
-
-const Restaurant = mongoose.model('Restaurant', restaurantSchema);
 
 // Restaurant.create(
 // 	{
